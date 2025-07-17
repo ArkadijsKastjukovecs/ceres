@@ -1,5 +1,5 @@
 # Use a base image with JDK
-FROM openjdk:21-oracle
+FROM maven:3.9.10-amazoncorretto-21
 
 COPY src /home/app/src
 COPY pom.xml /home/app
