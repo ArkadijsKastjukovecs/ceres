@@ -11,8 +11,6 @@ import java.util.Optional;
 @Service
 public class HistoryService {
 
-    private static final LocalDate MIN_LOCALDATE = LocalDate.of(1970, 1, 1);
-
     private final JunoConsumer junoConsumer;
     private final VisitDao visitDao;
 
@@ -25,13 +23,14 @@ public class HistoryService {
         final var lastSavedVisit = visitDao.findLastSavedVisit();
         final var fromDate = Optional.ofNullable(lastSavedVisit)
                 .map(LocalDateTime::toLocalDate)
-                .orElse(MIN_LOCALDATE);
+                .orElse(LocalDate.EPOCH);
 
-        final var salesDataDto = junoConsumer.fetchSalesInformation(fromDate, LocalDate.now());
+        final var salesDataDtoFlux = junoConsumer.fetchSalesInformation(fromDate, LocalDate.now());
         final var thresholdDate = Optional.ofNullable(lastSavedVisit)
-                .orElse(MIN_LOCALDATE.atStartOfDay());
+                .orElse(LocalDate.EPOCH.atStartOfDay());
 
-        salesDataDto.filter(data -> data.visitDate().isAfter(thresholdDate))
+        salesDataDtoFlux
+                .filter(data -> data.visitDate().isAfter(thresholdDate))
                 .subscribe(salesData -> Thread.ofVirtual().start(() -> visitDao.saveVisitFromJuno(salesData)));
     }
 }
