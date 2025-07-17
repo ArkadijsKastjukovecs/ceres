@@ -32,6 +32,6 @@ public class HistoryService {
                 .orElse(MIN_LOCALDATE.atStartOfDay());
 
         salesDataDto.filter(data -> data.visitDate().isAfter(thresholdDate))
-                .subscribe(visitDao::saveVisitFromJuno);
+                .subscribe(salesData -> Thread.ofVirtual().start(() -> visitDao.saveVisitFromJuno(salesData)));
     }
 }
